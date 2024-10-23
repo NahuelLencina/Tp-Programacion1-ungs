@@ -5,6 +5,10 @@ import java.awt.Image;
 import entorno.Entorno;
 import entorno.Herramientas;
 import entorno.InterfaceJuego;
+import java.util.List;
+import java.util.ArrayList;
+import java.awt.Point;
+ 
 
 public class Juego extends InterfaceJuego
 {
@@ -12,6 +16,7 @@ public class Juego extends InterfaceJuego
 	private Entorno entorno;
 	private Image fondo;
 	private Image casita;
+	private Image gnomo;
 	private Isla[] islas;
 		
 	// Variables y métodos propios de cada grupo
@@ -23,15 +28,22 @@ public class Juego extends InterfaceJuego
 		this.entorno = new Entorno(this, "Al Rescate de los Gnomos", 800, 600);
 
 		// Inicializar lo que haga falta para el juego
-	
+		this.islas = new Isla[15];  // Declaramos la lista de islas
+		
+		
 	
 		
 		// Se llama al metodo cargar el fondo
 		cargarFondo();
-		
 		// Se llama al metodo para cargar las islas   	
 		cargarIslas();
-		this.casita = Herramientas.cargarImagen("Imagenes/Casita.png");
+		// Se llama al metodo para cargar los Gnomas
+		cargarImgGnomos();
+		// Se llama al metodo para cargar la casita
+		cargarCasita();
+		
+		
+		
 	
 		// Inicia el juego!
 		this.entorno.iniciar();
@@ -49,13 +61,15 @@ public class Juego extends InterfaceJuego
 		// Procesamiento de un instante de tiempo
 		// Imprimimos el fondo en la ventana, usamos la sobreCarga del metodo dibujarImagen para ampliar la misma 
 		
-		this.entorno.dibujarImagen(fondo, entorno.ancho() / 2, entorno.alto()/2, 0, 1.1);
-		
+		this.entorno.dibujarImagen(fondo, entorno.ancho() / 2, entorno.alto()/2, 0, 1.1);		
 		this.entorno.dibujarImagen(casita, entorno.ancho()/ 2, 80, 0, 0.2);
 		
 		for (Isla isla : islas) {
 				entorno.dibujarImagen(isla.getImagen(), isla.getX(), isla.getY(), 0, 0.3);
 		}
+			
+	
+		this.entorno.dibujarImagen(gnomo , 320, 170, 0, 0.05);
 		
 		
 		// Aca debemos declarar un if con las vidas
@@ -79,7 +93,9 @@ public class Juego extends InterfaceJuego
 	
 	// Este metodo se encarga de cargar las cordenadas de las Islas en forma de piramide
 	public void cargarIslas() {
-		this.islas = new Isla[15]; 
+		
+		List<Point> listaCoordenadas = new ArrayList<>();// Creo un ArrayList para guardar las coordenadas de las islas
+		
 		
 		int inicioY = 120; 		// Posicion inicial para la primer isla en el eje Y
 		int nivel = 5; 			// Número de niveles de islas (filas)
@@ -87,6 +103,11 @@ public class Juego extends InterfaceJuego
 		int fila=80;			// Espacio vertical entre niveles
 		int distancia = 160;	// Espacio horizontal entre islas
 		int indice=0;			// Índice para recorrer el array de islas
+		int ancho=80;
+		int alto=10;
+				
+		
+		
 		
 		Image imagenIsla = Herramientas.cargarImagen("Imagenes/isla.jpg"); // Cargamos la Imagen
 		
@@ -95,14 +116,33 @@ public class Juego extends InterfaceJuego
 			
 			for(int columnaActual=0; columnaActual<columna; columnaActual++) {
 												// Crear una isla y agregarla al array
-					this.islas[indice] = new Isla(imagenIsla, inicioX-fila*nivelActual, inicioY);  
+				this.islas[indice] = new Isla(imagenIsla, inicioX-(80*nivelActual), inicioY, ancho, alto);  
+				
+				listaCoordenadas.add(new Point (inicioX-fila*nivelActual,inicioY)); // guardamos en una Lista las cordenadas de las islas
+				
 				inicioX+=distancia;				// Espacio entre islas
 				indice++; 						// Avanzar al siguiente índice en el array de islas
-
+					
 			}
 			inicioY+=fila; 						// Bajar al siguiente nivel
 			columna++;							// Aumentar la cantidad de columnas en el siguiente nivel
+			
 		}
+		
+		// imprimimos las coordenadas por consola
+		for (Point p : listaCoordenadas) {
+            System.out.println("(" + p.x + ", " + p.y + ")");
+        }
+	}
+	
+	public void cargarCasita()
+	{
+		this.casita = Herramientas.cargarImagen("Imagenes/casita.png");
+	}
+	
+	public void cargarImgGnomos()
+	{
+		this.gnomo = Herramientas.cargarImagen("Imagenes/Gnomo.png");	
 	}
 	
 	@SuppressWarnings("unused")

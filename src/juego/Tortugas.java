@@ -1,19 +1,17 @@
 package juego;
 
-import entorno.Entorno;
 import java.awt.Image;
 
+import entorno.Entorno;
 
-public class Gnomo {
-	 
-	
+public class Tortugas {
 	private int x, y, direccion;
 	private Image image;
 	
 
 	
 //Constructor que recibe la imagen y las coordenadas
-	public Gnomo(Image image, int x, int y, int direccion)
+	public Tortugas(Image image, int x, int y, int direccion)
 	{
 		this.image = image; 
 		this.x = x;

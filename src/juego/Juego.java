@@ -1,6 +1,6 @@
 package juego;
 
-import java.awt.Color;
+
 import java.awt.Image;
 import entorno.Entorno;
 import entorno.Herramientas;
@@ -54,17 +54,21 @@ public class Juego extends InterfaceJuego
 		// Se llama al metodo para agregar los Gnomas
 		agregarGnomo();
 		// Se llama al metodo para agregar los tortugas
-		agregarTortuga();
+		// agregarTortuga();
 		// Se llama al metodo para cargar la casita
 		cargarCasita();
 
 		// Generar el tiempo para la primera aparición
 		tiempoParaAparecer = generarTiempoAleatorio();
-
+		
+		
+		
 		// Inicia el juego!
 		this.entorno.iniciar();
 	}
 
+	
+	 
 
 	/**
 	 * Durante el juego, el método tick() será ejecutado en cada instante y 
@@ -79,7 +83,6 @@ public class Juego extends InterfaceJuego
 		// Procesamiento de un instante de tiempo
 
 		// Imprimimos el fondo en la ventana, usamos la sobreCarga del metodo dibujarImagen para ampliar la misma 
-
 		this.entorno.dibujarImagen(fondo, entorno.ancho() / 2, entorno.alto()/2, 0, 1.1);		
 		this.entorno.dibujarImagen(casita, entorno.ancho()/ 2, 80, 0, 0.2);
 
@@ -89,40 +92,47 @@ public class Juego extends InterfaceJuego
 	
 		
 	    // Dibujar y mover los gnomos
-	    for (Gnomo gnomo : gnomos) {
+	    for (int i = 0; i < gnomos.length; i++) {
+	    	Gnomo gnomo = gnomos[i];  // Obtener el gnomo en la posición i
 	        if (gnomo != null) { // Verificar que el gnomo no sea null
 	            gnomo.dibujar(this.entorno);
 	            
 	            if (!gnomoSobreIsla(gnomo)) {
 	                // Si el gnomo no está sobre una isla, desciende
-	                gnomo.setY(gnomo.getY() + 2); // Incrementa Y para simular caída
-	                int numeroConSignoAleatorio = cambiarSignoAleatorio(direccion); 
-	                gnomo.setDireccion(numeroConSignoAleatorio);
+	                gnomo.setY(gnomo.getY() + 1); // Incrementa Y para simular caída
+	                if(gnomo.getY()>550) {
+	                	System.out.println("chau");  
+	                	gnomos[i] = null;
+	                	
+	                } else {
+	                	int newDireccion = direccionAleatorio(direccion); 
+	                	gnomo.setDireccion(newDireccion);
+	                }
+	            
 	            } else {
+	             
 	                gnomo.mover(); // Si está sobre una isla, puede moverse
 	            }
 	        }
 	    }
 	    
-	    // Dibujar y mover los gnomos
+	    // Dibujar y mover las tortugas
 	    for (Tortugas tortuga : tortuga) {
-	        if (tortuga != null) { // Verificar que el gnomo no sea null
+	        if (tortuga != null) { // Verificar que la tortuga no sea null
 	            tortuga.dibujar(this.entorno);
 	            
 	            if (!tortugaSobreIsla(tortuga)) {
-	                // Si el gnomo no está sobre una isla, desciende
+	                // Si la tortuga no está sobre una isla, desciende
 	                tortuga.setY(tortuga.getY() + 2); // Incrementa Y para simular caída
-	                int numeroConSignoAleatorio = cambiarSignoAleatorio(direccion); 
-	                tortuga.setDireccion(numeroConSignoAleatorio);
+	               
+	                int newDireccion = direccionAleatorio(direccion); 
+	                
+	                tortuga.setDireccion(newDireccion);
 	            } else {
 	                tortuga.mover(); // Si está sobre una isla, puede moverse
 	            }
 	        }
-	    }
-	    
-	    
-	    
-	    
+	    }  
 	}
 
 	// Método para verificar si un gnomo está sobre alguna isla
@@ -149,7 +159,7 @@ public class Juego extends InterfaceJuego
 	private boolean tortugaSobreIsla(Tortugas tortuga) {
 	    for (Isla isla : islas) {
 	        if (isla != null) {
-	            // Verifica si el gnomo está dentro de los límites de la isla
+	            // Verifica si la tortuga está dentro de los límites de la isla
 	            boolean tocandoX = tortuga.getX() >= isla.getX() - isla.getAncho() / 2 &&
 	                               tortuga.getX() <= isla.getX() + isla.getAncho() / 2;
 
@@ -157,17 +167,19 @@ public class Juego extends InterfaceJuego
 	                               tortuga.getY() <= isla.getY() + isla.getAlto() / 2;
 
 	            if (tocandoX && tocandoY) {
-	                return true; // El gnomo está sobre esta isla
+	                return true; // La tortuga está sobre esta isla
 	            }
 	        }
 	    }
-	    return false; // El gnomo no está sobre ninguna isla
+	    return false; // La tortuga no está sobre ninguna isla
 	}
-			
+	
+	
+
 	
 	
 	private int generarTiempoAleatorio() {
-		return random.nextInt(180) + 60;// Genera entre 60 (1 segundo) y 240 (4 segundos)
+		return random.nextInt(400);// Genera tiempo aleatorio hasta 400 tick
 	}
 
 	public void actualizar() {
@@ -190,8 +202,8 @@ private void agregarTortuga() {
 			if(tortuga[i]==null){
 				int x=400;
 				int y=0;
-				int numeroConSignoAleatorio = cambiarSignoAleatorio(direccion);
-				direccion=numeroConSignoAleatorio;
+				int newDireccion= direccionAleatorio(direccion);
+				direccion=newDireccion;
 
 				Image imagenTortuga = Herramientas.cargarImagen("Imagenes/Tortuga.png");
 				tortuga[i] = new Tortugas(imagenTortuga, x, y, direccion); // Crea el nuevo Gnomo en la posición fija
@@ -204,26 +216,26 @@ private void agregarTortuga() {
 
 private void agregarGnomo() {
 
-		direccion = (1);
+		direccion = 1;
 
 		for (int i = 0; i < gnomos.length; i++) {
 			if (gnomos[i] == null) {
 				// Usar coordenadas fijas para la posición del Gnomo
 				int x = entorno.ancho()/2; // Coordenada fija en X
 				int y = 95; // Coordenada fija en Y
-				int numeroConSignoAleatorio = cambiarSignoAleatorio(direccion);
-				direccion=numeroConSignoAleatorio;
+				int newDireccion = direccionAleatorio(direccion);
+				direccion=newDireccion;
 				Image imagenGnomo = Herramientas.cargarImagen("Imagenes/gnomo.png");
 				gnomos[i] = new Gnomo(imagenGnomo, x, y, direccion); // Crea el nuevo Gnomo en la posición fija
-
+				System.out.println("Gnomo Creado");
 				// Mensaje de verificación
-				System.out.println("Gnomo creado en posición: (" + x + ", " + y + ")");
+				
 				break;  // Salimos del bucle después de agregar el Gnomo
 			}
 		}
 	}
 
-	private int cambiarSignoAleatorio(int numero) {
+	private int direccionAleatorio(int numero) {
 		Random random = new Random();
 		// Genera un booleano aleatorio para determinar el signo
 		boolean esNegativo = random.nextBoolean(); // true o false aleatoriamente

@@ -5,12 +5,7 @@ import java.awt.Image;
 import entorno.Entorno;
 import entorno.Herramientas;
 import entorno.InterfaceJuego;
-import java.util.List;
 import java.util.Random;
-
-
-import java.util.ArrayList;
-import java.awt.Point;
 
 public class Juego extends InterfaceJuego
 {
@@ -19,22 +14,15 @@ public class Juego extends InterfaceJuego
 	private Image fondo;
 	private Image casita;
 	private Gnomo[] gnomos;
-	private Tortugas[] tortuga;
+	private Tortugas[] tortugas;
 	private Isla[] islas;
-	private int vidaActual=0;
-
-
+	private int vidaActual=3;
 	private int tickContador = 0; // Contador de ticks
 	private int tiempoParaAparecer; // Ticks hasta la próxima aparición
 	private Random random = new Random(); // Generador de números aleatorios
-
 	private int direccion;
-
-	// Variables y métodos propios de cada grupo
-	// ...	
-	private List<Point> listaCoordenadas = new ArrayList<>();// Creo un ArrayList para guardar las coordenadas de las islas
-
-	
+	private boolean enMovimiento = false;
+		
 	Juego()
 	{
 		// Inicializa el objeto entorno
@@ -43,33 +31,17 @@ public class Juego extends InterfaceJuego
 		// Inicializar lo que haga falta para el juego
 		this.islas = new Isla[15];  // Declaramos la lista de islas
 		this.gnomos = new Gnomo[5];  // Declaramos la lista de gnomos
-		this.tortuga = new Tortugas[4];
+		this.tortugas = new Tortugas[4];
 	
-		
-
 		// Se llama al metodo cargar el fondo
 		cargarFondo();
 		// Se llama al metodo para cargar las islas   	
 		cargarIslas();
-		// Se llama al metodo para agregar los Gnomas
-		agregarGnomo();
-		// Se llama al metodo para agregar los tortugas
-		// agregarTortuga();
 		// Se llama al metodo para cargar la casita
 		cargarCasita();
-
-		// Generar el tiempo para la primera aparición
-		tiempoParaAparecer = generarTiempoAleatorio();
-		
-		
-		
 		// Inicia el juego!
-		this.entorno.iniciar();
+		this.entorno.iniciar();	
 	}
-
-	
-	 
-
 	/**
 	 * Durante el juego, el método tick() será ejecutado en cada instante y 
 	 * por lo tanto es el método más importante de esta clase. Aquí se debe 
@@ -79,62 +51,81 @@ public class Juego extends InterfaceJuego
 	public void tick()
 	{	
 		
-		actualizar();
+		if(entorno.sePresiono(entorno.TECLA_ENTER) || enMovimiento==true) {
+		//if(vidaActual>0){
+			actualizar();	
+			enMovimiento=true;
+			
+			//}	
+		}
+		
 		// Procesamiento de un instante de tiempo
-
+				
+		imprimirFondo();
+		imprimirCasita();
+	    dibujarIslas();
+	    actualizarGnomos();
+	    actualizarTortugas();
+	}  
+	
+	
+	
+	private void imprimirFondo() {
 		// Imprimimos el fondo en la ventana, usamos la sobreCarga del metodo dibujarImagen para ampliar la misma 
-		this.entorno.dibujarImagen(fondo, entorno.ancho() / 2, entorno.alto()/2, 0, 1.1);		
+				this.entorno.dibujarImagen(fondo, entorno.ancho() / 2, entorno.alto()/2, 0, 1.1);
+	}
+	
+	private void imprimirCasita(){
 		this.entorno.dibujarImagen(casita, entorno.ancho()/ 2, 80, 0, 0.2);
-
+	}
+	
+	private void dibujarIslas() {
 		for (Isla isla : islas) {
 			entorno.dibujarImagen(isla.getImagen(), isla.getX(), isla.getY(), 0, 0.3);
 		}
+	}
 	
-		
-	    // Dibujar y mover los gnomos
+	
+	private void moverGnomo(Gnomo gnomo, int index) {
+	    gnomo.setY(gnomo.getY() + 1);
+	    if (gnomo.getY() > 550 || colisionConTortuga(gnomo)) {
+	        this.gnomos[index] = null; // Eliminar el gnomo si cae o colisiona
+	    } else {
+	        int nuevaDireccion = direccionAleatorio(direccion);
+	        gnomo.setDireccion(nuevaDireccion);
+	    }
+	}
+	
+	private void actualizarGnomos() {
 	    for (int i = 0; i < gnomos.length; i++) {
-	    	Gnomo gnomo = gnomos[i];  // Obtener el gnomo en la posición i
-	        if (gnomo != null) { // Verificar que el gnomo no sea null
+	        Gnomo gnomo = gnomos[i];
+	        if (gnomo != null) {
 	            gnomo.dibujar(this.entorno);
-	            
 	            if (!gnomoSobreIsla(gnomo)) {
-	                // Si el gnomo no está sobre una isla, desciende
-	                gnomo.setY(gnomo.getY() + 1); // Incrementa Y para simular caída
-	                if(gnomo.getY()>550) {
-	                	System.out.println("chau");  
-	                	gnomos[i] = null;
-	                	
-	                } else {
-	                	int newDireccion = direccionAleatorio(direccion); 
-	                	gnomo.setDireccion(newDireccion);
-	                }
-	            
+	                moverGnomo(gnomo, i);
 	            } else {
-	             
-	                gnomo.mover(); // Si está sobre una isla, puede moverse
+	                gnomo.mover();
 	            }
 	        }
 	    }
-	    
-	    // Dibujar y mover las tortugas
-	    for (Tortugas tortuga : tortuga) {
-	        if (tortuga != null) { // Verificar que la tortuga no sea null
+	}
+	
+	private void actualizarTortugas() {
+	    for (Tortugas tortuga : tortugas) {
+	        if (tortuga != null) {
 	            tortuga.dibujar(this.entorno);
-	            
-	            if (!tortugaSobreIsla(tortuga)) {
-	                // Si la tortuga no está sobre una isla, desciende
-	                tortuga.setY(tortuga.getY() + 2); // Incrementa Y para simular caída
-	               
-	                int newDireccion = direccionAleatorio(direccion); 
-	                
-	                tortuga.setDireccion(newDireccion);
+	            if (tortugaSobreIsla(tortuga)) {
+	                tortuga.mover();
+	                if (colisionBordeIsla(tortuga)) {
+	                    tortuga.setDireccion(-tortuga.getDireccion());
+	                }
 	            } else {
-	                tortuga.mover(); // Si está sobre una isla, puede moverse
+	                tortuga.setY(tortuga.getY() + 2);
 	            }
 	        }
-	    }  
+	    }
 	}
-
+	
 	// Método para verificar si un gnomo está sobre alguna isla
 	private boolean gnomoSobreIsla(Gnomo gnomo) {
 	    for (Isla isla : islas) {
@@ -154,28 +145,61 @@ public class Juego extends InterfaceJuego
 	    return false; // El gnomo no está sobre ninguna isla
 	}
 	
-	
-	
-	private boolean tortugaSobreIsla(Tortugas tortuga) {
-	    for (Isla isla : islas) {
-	        if (isla != null) {
-	            // Verifica si la tortuga está dentro de los límites de la isla
-	            boolean tocandoX = tortuga.getX() >= isla.getX() - isla.getAncho() / 2 &&
-	                               tortuga.getX() <= isla.getX() + isla.getAncho() / 2;
 
-	            boolean tocandoY = tortuga.getY() >= isla.getY() - isla.getAlto() / 2 &&
-	                               tortuga.getY() <= isla.getY() + isla.getAlto() / 2;
+	private boolean colisionConTortuga(Gnomo gnomo) {
+	    int margen = 10;  // Margen de colisión
 
-	            if (tocandoX && tocandoY) {
-	                return true; // La tortuga está sobre esta isla
+	    for (Tortugas tortuga : tortugas) {
+	        if (gnomo != null && tortuga != null) {
+	            // Verificar si las posiciones están dentro del margen
+	            boolean colisionX = Math.abs(tortuga.getX() - gnomo.getX()) < margen;
+	            boolean colisionY = Math.abs(tortuga.getY() - gnomo.getY()) < margen;
+
+	            if (colisionX && colisionY) {
+	            	System.out.println("¡Gnomotocado!");
+	                return true;
 	            }
 	        }
 	    }
-	    return false; // La tortuga no está sobre ninguna isla
+	    return false;
 	}
 	
-	
+	private boolean colisionBordeIsla(Tortugas tortuga) {
+	    for (Isla isla : islas) {
+	        // Calcula los límites de la isla
+	        int limiteIzquierdo = isla.getX() - isla.getAncho() / 2;
+	        int limiteDerecho = isla.getX() + isla.getAncho() / 2;
+	        int limiteSuperior = isla.getY() - isla.getAlto() / 2;
+	        int limiteInferior = isla.getY() + isla.getAlto() / 2;
 
+	        // Verifica si la tortuga está dentro de los límites de la isla (con margen de 10)
+	        if( (tortuga.getX()-10) == limiteIzquierdo && tortuga.getY() >= limiteSuperior && tortuga.getY() <= limiteInferior) {
+	        	tortuga.setX(tortuga.getX()+5);
+	        	return true;
+	        }
+	        if(tortuga.getX()+10 == limiteDerecho && tortuga.getY() >= limiteSuperior && tortuga.getY() <= limiteInferior){
+	        	tortuga.setX(tortuga.getX()-5);
+	        	return true;
+	        }     
+	    }
+	    return false; // La tortuga no está sobre ninguna isla
+	}	
+	// Método para verificar si un tortuga está sobre alguna isla
+	private boolean tortugaSobreIsla(Tortugas tortuga) {
+	    for (Isla isla : islas) {
+	        if (isla != null) {
+	            // Verifica si el gnomo está dentro de los límites de la isla
+	            boolean tocandoX = tortuga.getX() >= isla.getX() - isla.getAncho() / 2 &&
+	                               tortuga.getX() <= isla.getX() + isla.getAncho() / 2;
+	            boolean tocandoY = tortuga.getY()>180 &&	tortuga.getY() >= isla.getY() - isla.getAlto() / 2 &&
+	            				   tortuga.getY() <= isla.getY() + isla.getAlto() / 2;
+	            if (tocandoX && tocandoY) {
+	                return true; // El gnomo está sobre esta isla
+	            }
+	        }
+	    }
+	    return false; // El gnomo no está sobre ninguna isla
+	}
 	
 	
 	private int generarTiempoAleatorio() {
@@ -189,30 +213,29 @@ public class Juego extends InterfaceJuego
 		if (tickContador >= tiempoParaAparecer) {
 			// Intenta agregar un nuevo Gnomo si hay espacio
 			agregarGnomo();
+			agregarTortuga();
+			
 			// Resetea el contador y genera el nuevo tiempo para la próxima aparición
 			tickContador = 0;
 			tiempoParaAparecer = generarTiempoAleatorio();
 		}
 	}
-
-private void agregarTortuga() {
-	direccion = (1);
 	
-		for(int i=0; i<tortuga.length;i++){
-			if(tortuga[i]==null){
-				int x=400;
+private void agregarTortuga() {
+	//direccion = 1;
+	
+		for(int i=0; i<tortugas.length;i++){
+			if(tortugas[i]==null){
+				int x= random.nextInt(80,720);
 				int y=0;
-				int newDireccion= direccionAleatorio(direccion);
-				direccion=newDireccion;
-
+				int ancho = 5;
+				int alto = 10;
 				Image imagenTortuga = Herramientas.cargarImagen("Imagenes/Tortuga.png");
-				tortuga[i] = new Tortugas(imagenTortuga, x, y, direccion); // Crea el nuevo Gnomo en la posición fija
-				
-				
+				tortugas[i] = new Tortugas(imagenTortuga, x, y, direccion,ancho, alto); // Crea el nuevo Gnomo en la posición fija
+				break;// Salimos del bucle después de agregar la tortuga
 			}
 		}
 	}
-
 
 private void agregarGnomo() {
 
@@ -223,13 +246,12 @@ private void agregarGnomo() {
 				// Usar coordenadas fijas para la posición del Gnomo
 				int x = entorno.ancho()/2; // Coordenada fija en X
 				int y = 95; // Coordenada fija en Y
+				int ancho = 5;
+				int alto = 10;
 				int newDireccion = direccionAleatorio(direccion);
 				direccion=newDireccion;
 				Image imagenGnomo = Herramientas.cargarImagen("Imagenes/gnomo.png");
-				gnomos[i] = new Gnomo(imagenGnomo, x, y, direccion); // Crea el nuevo Gnomo en la posición fija
-				System.out.println("Gnomo Creado");
-				// Mensaje de verificación
-				
+				gnomos[i] = new Gnomo(imagenGnomo, x, y, direccion, ancho, alto); // Crea el nuevo Gnomo en la posición fija				
 				break;  // Salimos del bucle después de agregar el Gnomo
 			}
 		}
@@ -239,7 +261,6 @@ private void agregarGnomo() {
 		Random random = new Random();
 		// Genera un booleano aleatorio para determinar el signo
 		boolean esNegativo = random.nextBoolean(); // true o false aleatoriamente
-
 		// Si esNegativo es true, devuelve el número negativo, de lo contrario el número positivo
 		return esNegativo ? -numero : numero;
 	}
@@ -258,8 +279,6 @@ private void agregarGnomo() {
 	// Este metodo se encarga de cargar las cordenadas de las Islas en forma de piramide
 	public void cargarIslas() {
 
-		
-
 		int inicioY = 120; 		// Posicion inicial para la primer isla en el eje Y
 		int nivel = 5; 			// Número de niveles de islas (filas)
 		int columna = 1;		// Columnas iniciales en cada nivel
@@ -277,19 +296,12 @@ private void agregarGnomo() {
 			for(int columnaActual=0; columnaActual<columna; columnaActual++) {
 				// Crear una isla y agregarla al array
 				this.islas[indice] = new Isla(imagenIsla, inicioX-(80*nivelActual), inicioY, ancho, alto);  
-
-				listaCoordenadas.add(new Point (inicioX-fila*nivelActual,inicioY)); // guardamos en una Lista las cordenadas de las islas
-
 				inicioX+=distancia;				// Espacio entre islas
 				indice++; 						// Avanzar al siguiente índice en el array de islas
-
 			}
 			inicioY+=fila; 						// Bajar al siguiente nivel
 			columna++;							// Aumentar la cantidad de columnas en el siguiente nivel
-
 		}
-
-		
 	}
 
 	public void cargarCasita()

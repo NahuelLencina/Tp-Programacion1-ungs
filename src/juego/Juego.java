@@ -6,6 +6,7 @@ import entorno.Entorno;
 import entorno.Herramientas;
 import entorno.InterfaceJuego;
 import java.util.Random;
+import java.awt.event.KeyEvent;
 
 public class Juego extends InterfaceJuego
 {
@@ -20,6 +21,7 @@ public class Juego extends InterfaceJuego
 	private int tickContador = 0; // Contador de ticks
 	private int tiempoParaAparecer; // Ticks hasta la próxima aparición
 	private Random random = new Random(); // Generador de números aleatorios
+	private Pep pep;  // Agregamos a Pep
 	private int direccion;
 	private boolean enMovimiento = false;
 		
@@ -32,6 +34,7 @@ public class Juego extends InterfaceJuego
 		this.islas = new Isla[15];  // Declaramos la lista de islas
 		this.gnomos = new Gnomo[5];  // Declaramos la lista de gnomos
 		this.tortugas = new Tortugas[4];
+		this.pep = new Pep(Herramientas.cargarImagen("Imagenes/Pep.png"), entorno.ancho()/2, 370);
 	
 		// Se llama al metodo cargar el fondo
 		cargarFondo();
@@ -66,9 +69,49 @@ public class Juego extends InterfaceJuego
 	    dibujarIslas();
 	    actualizarGnomos();
 	    actualizarTortugas();
-	}  
+	    actualizarPep();
+	   
+
+        // Control de teclas para Pep
+        if (entorno.estaPresionada(entorno.TECLA_IZQUIERDA) || entorno.sePresiono('a')) {
+            pep.moverIzquierda();
+        } else if (entorno.estaPresionada(entorno.TECLA_DERECHA) || entorno.sePresiono('d')) {
+            pep.moverDerecha();
+        }
+
+        if (entorno.sePresiono(entorno.TECLA_ARRIBA) || entorno.sePresiono('w')) {
+            pep.saltar();
+        }
+
+        if (this.entorno.sePresiono('c')) {
+            pep.disparar();
+        }
+    }
 	
 	
+	public void actualizarPep() {
+		  // Actualizamos a Pep
+        pep.dibujar(this.entorno);
+        pep.actualizar();
+        if (!pepSobreIsla(pep) && !pep.estaSaltando()) {
+            pep.setY(pep.getY() + 1); // Pep cae si no está sobre una isla o saltando
+        }
+	}
+
+    private boolean pepSobreIsla(Pep pep) {
+        for (Isla isla : islas) {
+            if (isla != null) {
+                boolean tocandoX = pep.getX() >= isla.getX() - isla.getAncho() / 2 &&
+                        pep.getX() <= isla.getX() + isla.getAncho() / 2;
+                boolean tocandoY = pep.getY() >= isla.getY() - isla.getAlto() / 2 &&
+                        pep.getY() <= isla.getY() + isla.getAlto() / 2;
+                if (tocandoX && tocandoY) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 	
 	private void imprimirFondo() {
 		// Imprimimos el fondo en la ventana, usamos la sobreCarga del metodo dibujarImagen para ampliar la misma 

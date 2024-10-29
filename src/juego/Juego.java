@@ -6,11 +6,12 @@ import entorno.Entorno;
 import entorno.Herramientas;
 import entorno.InterfaceJuego;
 import java.util.Random;
-import java.awt.event.KeyEvent;
+
 
 public class Juego extends InterfaceJuego
 {
-	// El objeto Entorno que controla el tiempo y otros
+	//Variables de instancia
+	
 	private Entorno entorno;
 	private Image fondo;
 	private Image casita;
@@ -22,9 +23,11 @@ public class Juego extends InterfaceJuego
 	private int tiempoParaAparecer; // Ticks hasta la próxima aparición
 	private Random random = new Random(); // Generador de números aleatorios
 	private Pep pep;  // Agregamos a Pep
-	private int direccion;
+	private int direccion = 1;
 	private boolean enMovimiento = false;
 		
+	
+	// Metodos 
 	Juego()
 	{
 		// Inicializa el objeto entorno
@@ -53,13 +56,14 @@ public class Juego extends InterfaceJuego
 	 */
 	public void tick()
 	{	
-		
 		if(entorno.sePresiono(entorno.TECLA_ENTER) || enMovimiento==true) {
-		//if(vidaActual>0){
-			actualizar();	
-			enMovimiento=true;
-			
-			//}	
+			if(vidaActual>0){
+				actualizar();	
+				enMovimiento=true;
+			}	
+			else {
+				entorno.escribirTexto("Game Over"+ vidaActual, entorno.ancho()/2, 550);	
+			}	
 		}
 		
 		// Procesamiento de un instante de tiempo
@@ -71,7 +75,6 @@ public class Juego extends InterfaceJuego
 	    actualizarTortugas();
 	    actualizarPep();
 	   
-
         // Control de teclas para Pep
         if (entorno.estaPresionada(entorno.TECLA_IZQUIERDA) || entorno.sePresiono('a')) {
             pep.moverIzquierda();
@@ -144,10 +147,17 @@ public class Juego extends InterfaceJuego
 	        Gnomo gnomo = gnomos[i];
 	        if (gnomo != null) {
 	            gnomo.dibujar(this.entorno);
+	           
 	            if (!gnomoSobreIsla(gnomo)) {
 	                moverGnomo(gnomo, i);
 	            } else {
+	            	
 	                gnomo.mover();
+	                if(colisionConTortuga(gnomo)) {
+	                	this.gnomos[i] = null;
+	                //	System.out.println("Muere Gnomo");
+	                	
+	                }
 	            }
 	        }
 	    }
@@ -190,7 +200,7 @@ public class Juego extends InterfaceJuego
 	
 
 	private boolean colisionConTortuga(Gnomo gnomo) {
-	    int margen = 10;  // Margen de colisión
+	    int margen = 20;  // Margen de colisión
 
 	    for (Tortugas tortuga : tortugas) {
 	        if (gnomo != null && tortuga != null) {
@@ -199,7 +209,8 @@ public class Juego extends InterfaceJuego
 	            boolean colisionY = Math.abs(tortuga.getY() - gnomo.getY()) < margen;
 
 	            if (colisionX && colisionY) {
-	            	System.out.println("¡Gnomotocado!");
+	            	System.out.println("Muere Gnomo");
+	            	vidaActual--;
 	                return true;
 	            }
 	        }
@@ -281,9 +292,6 @@ private void agregarTortuga() {
 	}
 
 private void agregarGnomo() {
-
-		direccion = 1;
-
 		for (int i = 0; i < gnomos.length; i++) {
 			if (gnomos[i] == null) {
 				// Usar coordenadas fijas para la posición del Gnomo

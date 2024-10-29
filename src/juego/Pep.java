@@ -11,7 +11,6 @@ public class Pep {
 	    private boolean saltando;
 	    private int velocidadY;
 	    private int direccionUltima;
-
 	    public Pep(Image imagen, int x, int y) {
 	        this.imagen = imagen;
 	        this.x = x;
@@ -22,7 +21,7 @@ public class Pep {
 	    }
 
 	    public void dibujar(Entorno entorno) {
-	        entorno.dibujarImagen(imagen, x, y, 0, 0.03);
+	        entorno.dibujarImagen(imagen, x, y, 0, 0.05);
 	    }
 
 	    public void moverIzquierda() {

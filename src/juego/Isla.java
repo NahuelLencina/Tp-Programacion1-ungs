@@ -18,11 +18,27 @@ public class Isla {
 	        
 	    }
 
-	    // Getters para acceder a las propiedades
+	    // metodos para acceder a las propiedades
 	    
-	    public int getX() { return x; }
-	    public int getY() { return y; }
-	    public Image getImagen() { return image; } 
-	    public int getAncho() {return ancho;}
-	    public int getAlto() {return alto;}
+	    public int getX() { 
+	    	return x; 
+	    	}
+	    
+	    public int getY() { 
+	    	return y; 
+	    	}
+	    
+	    public Image getImagen() { 
+	    	return image; 
+	    	}
+	    
+	    public int getAncho() {
+	    	return ancho;
+	    	}
+	    
+	    public int getAlto() {
+	    	return alto;
+	    	}
+	    
+	    
 }

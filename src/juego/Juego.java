@@ -7,6 +7,10 @@ import java.awt.Image;
 import entorno.Entorno;
 import entorno.Herramientas;
 import entorno.InterfaceJuego;
+import jdk.internal.org.jline.terminal.TerminalBuilder.SystemOutput;
+
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.Random;
 
 
@@ -15,6 +19,8 @@ public class Juego extends InterfaceJuego
 	 private Entorno entorno;
 	    private Image fondo;
 	    private Image casita;
+	    
+	    private BolaDeFuego[] bolas;	    
 	    private Gnomo[] gnomos;
 	    private Tortugas[] tortugas;
 	    private Isla[] islas;
@@ -25,7 +31,7 @@ public class Juego extends InterfaceJuego
 	    private Pep pep; // Agregamos a Pep
 	    private int direccion = 1;
 	    private boolean enMovimiento = false;
-	    
+	    private int velocidadBola = -3;
 	    private int tiempoEnSegundos = 0;
 	    private int ticksPorSegundo = 60; // Suponiendo que 60 ticks equivalen a 1 segundo
 	    private int contadorDeTicks = 0; // Contador auxiliar de ticks
@@ -36,10 +42,11 @@ public class Juego extends InterfaceJuego
 	        this.entorno = new Entorno(this, "Al Rescate de los Gnomos", 800, 600);
 
 	        // Inicializar lo que haga falta para el juego
-	        this.islas = new Isla[15]; // Declaramos la lista de islas
-	        this.gnomos = new Gnomo[5]; // Declaramos la lista de gnomos
+	        this.islas = new Isla[15]; // Declaramos el array de islas
+	        this.gnomos = new Gnomo[5]; // Declaramos el array de gnomos
 	        this.tortugas = new Tortugas[4];
-	        this.pep = new Pep(Herramientas.cargarImagen("Imagenes/Pep.png"), entorno.ancho() / 2, 300); // Posición inicial de Pep
+	        this.pep = new Pep(Herramientas.cargarImagen("Imagenes/Pep.png"), entorno.ancho() / 2, 400); // Posición inicial de Pep
+	        this.bolas = new BolaDeFuego [12];
 
 	        // Se llama al método cargar el fondo
 	        cargarFondo();
@@ -52,17 +59,14 @@ public class Juego extends InterfaceJuego
 	    }
 
 	    public void tick() {
-	
+	    	
 	        if (entorno.sePresiono(entorno.TECLA_ENTER) || enMovimiento) {
 	            if (vidaActual > 0) {
 	                actualizar();
-	               // Herramientas.play("Sonidos/");
 	                enMovimiento = true;
 	            }
 	        }
 	        
-	    
-
 	        // Procesamiento de un instante de tiempo
 	        imprimirFondo();
 	        imprimirCasita();
@@ -70,16 +74,20 @@ public class Juego extends InterfaceJuego
 	        actualizarGnomos();
 	        actualizarTortugas();
 	        actualizarPep();
-	        // Mostrar tiempo en pantalla
+	        actualizarBola();
+	        
 	       
+	        
+	       
+	        
+	        // Mostrar tiempo en pantalla
 	        if(enMovimiento==true&&vidaActual>0) {	
 	        	// Incrementar contador de ticks para el tiempo
 		    	contadorDeTicks++;
 		    	if (contadorDeTicks >= ticksPorSegundo) {
 		    		tiempoEnSegundos++;
 		    		contadorDeTicks = 0;
-		    	}
-	         	
+		    	}   	
 	        }
 	        entorno.cambiarFont("ITALIC", 20, Color.BLACK);
 
@@ -99,25 +107,54 @@ public class Juego extends InterfaceJuego
 	        // Control de teclas para Pep
 	        if (entorno.estaPresionada(entorno.TECLA_IZQUIERDA) || entorno.sePresiono('a')) {
 	            pep.moverIzquierda();
+	            velocidadBola = -3;
 	        } else if (entorno.estaPresionada(entorno.TECLA_DERECHA) || entorno.sePresiono('d')) {
 	            pep.moverDerecha();
+	            velocidadBola = 3;
 	        }
 
 	        // Iniciar el salto
 	        if (entorno.sePresiono(entorno.TECLA_ARRIBA) || entorno.sePresiono('w')) {
 	            pep.saltar();
+	           // Herramientas.play("Sonidos/mario-bros-woo-hoo.wav");
 	        }
 
 	        if (entorno.sePresiono(entorno.TECLA_ABAJO) || entorno.sePresiono('s')) {
 	            pep.moverAbajo(islas);
 	        }
 
-	        if (this.entorno.sePresiono('c')) {
-	            pep.disparar();
+	       
+	        if (entorno.sePresiono('c') && enMovimiento) {
+	        	//Herramientas.play("Sonidos/dry-fart.wav");
+	        	agregarBola(pep.getX(),pep.getY(),velocidadBola);
+	        	
+	        		
+	        	
 	        }
 	    }
+
 	    
-	    private void mostrarTiempoEnPantalla() {
+	    private boolean colisionConTortuga(Gnomo gnomo) {
+	        int margen = 20; // Margen de colisión
+
+	        for (Tortugas tortuga : tortugas) {
+	            if (gnomo != null && tortuga != null) {
+	                // Verificar si las posiciones están dentro del margen
+	                boolean colisionX = Math.abs(tortuga.getX() - gnomo.getX()) < margen;
+	                boolean colisionY = Math.abs(tortuga.getY() - gnomo.getY()) < margen;
+
+	                if (colisionX && colisionY) {
+	                    if(vidaActual>0)
+	                    	vidaActual--;
+	                    return true;
+	                }
+	            }
+	        }
+	        return false;
+	    }
+		
+			
+		private void mostrarTiempoEnPantalla() {
 	        int minutos = tiempoEnSegundos / 60;
 	        int segundos = tiempoEnSegundos % 60;
 	        String tiempoFormateado = String.format("Tiempo: %02d:%02d", minutos, segundos);
@@ -133,10 +170,11 @@ public class Juego extends InterfaceJuego
 
 	        // Aplica gravedad si Pep no está sobre una isla y no está saltando
 	        if (!pepSobreIsla(pep) && !pep.estaSaltando()) {
-	            pep.setY(pep.getY() + 1); // Controlar la velocidad de caída
+	            pep.setY(pep.getY() + 2); // Controlar la velocidad de caída
 	        }
 	    }
-
+	    
+	    
 	    private boolean pepSobreIsla(Pep pep) {
 	        for (Isla isla : islas) {
 	            if (isla != null) {
@@ -152,7 +190,7 @@ public class Juego extends InterfaceJuego
 	        }
 	        return false;
 	    }
-
+	    
 	    private void imprimirFondo() {
 	        // Imprimimos el fondo en la ventana
 	        this.entorno.dibujarImagen(fondo, entorno.ancho() / 2, entorno.alto() / 2, 0, 1.1);
@@ -196,7 +234,45 @@ public class Juego extends InterfaceJuego
 	            }
 	        }
 	    }
-
+	    
+	    
+		private void actualizarBola() {
+			for (int i = 0; i < bolas.length; i++) {
+				BolaDeFuego bola = bolas[i];
+				if (bola != null) {
+					bola.dibujar(this.entorno);
+				if(bola.getX()>0 && bola.getX()<entorno.ancho()) {
+					bola.movimientoBola(); // si la bola de fuego esta dentro de la pantalla vive.	
+					if(disparoColision(bola)) {
+						this.bolas[i] = null; // al colisionar matamos el objeto bola de fuego
+					}
+				}
+				else
+					this.bolas[i] = null; // de lo contrario matamos el objeto bola de fuego
+				}
+				
+			}			
+		}
+		
+		
+		  private boolean disparoColision(BolaDeFuego bola) {
+		        int margen = 20; // Margen de colisión
+		        for (int i=0; i<tortugas.length;i++) {
+		        	Tortugas tortuga = tortugas[i];
+		        	if (bola != null && tortuga != null) {
+		                // Verificar si las posiciones están dentro del margen
+		                boolean colisionX = Math.abs(tortuga.getX() - bola.getX()) < margen;
+		                boolean colisionY = Math.abs(tortuga.getY() - bola.getY()) < margen;
+		                 
+		                if (colisionX && colisionY) {
+		                	this.tortugas[i] = null;
+		                    return true;
+		                }
+		            }
+		        }
+		        return false;
+		    }
+		
 	    private void actualizarTortugas() {
 	        for (Tortugas tortuga : tortugas) {
 	            if (tortuga != null) {
@@ -230,24 +306,7 @@ public class Juego extends InterfaceJuego
 	        return false; // El gnomo no está sobre ninguna isla
 	    }
 
-	    private boolean colisionConTortuga(Gnomo gnomo) {
-	        int margen = 20; // Margen de colisión
-
-	        for (Tortugas tortuga : tortugas) {
-	            if (gnomo != null && tortuga != null) {
-	                // Verificar si las posiciones están dentro del margen
-	                boolean colisionX = Math.abs(tortuga.getX() - gnomo.getX()) < margen;
-	                boolean colisionY = Math.abs(tortuga.getY() - gnomo.getY()) < margen;
-
-	                if (colisionX && colisionY) {
-	                    if(vidaActual>0)
-	                    	vidaActual--;
-	                    return true;
-	                }
-	            }
-	        }
-	        return false;
-	    }
+	
 
 		private boolean colisionBordeIsla(Tortugas tortuga) {
 		    for (Isla isla : islas) {
@@ -272,7 +331,6 @@ public class Juego extends InterfaceJuego
 		// Método para verificar si un tortuga está sobre alguna isla
 		private boolean tortugaSobreIsla(Tortugas tortuga) {
 		    for (Isla isla : islas) {
-		        if (isla != null) {
 		            // Verifica si el gnomo está dentro de los límites de la isla
 		            boolean tocandoX = tortuga.getX() >= isla.getX() - isla.getAncho() / 2 &&
 		                               tortuga.getX() <= isla.getX() + isla.getAncho() / 2;
@@ -281,7 +339,6 @@ public class Juego extends InterfaceJuego
 		            if (tocandoX && tocandoY) {
 		                return true; // El gnomo está sobre esta isla
 		            }
-		        }
 		    }
 		    return false; // El gnomo no está sobre ninguna isla
 		}
@@ -298,11 +355,20 @@ public class Juego extends InterfaceJuego
 			if (tickContador >= tiempoParaAparecer) {
 				// Intenta agregar un nuevo Gnomo si hay espacio
 				agregarGnomo();
-				agregarTortuga();
-				
+				agregarTortuga();				
 				// Resetea el contador y genera el nuevo tiempo para la próxima aparición
 				tickContador = 0;
 				tiempoParaAparecer = generarTiempoAleatorio();
+			}
+		}
+		
+		private void agregarBola(int x, int y, int direccion) {
+			for(int i=0; i<bolas.length;i++){
+				if(bolas[i]==null){
+					Image imagenBola = Herramientas.cargarImagen("Imagenes/fireball.png");
+					bolas[i] = new BolaDeFuego(imagenBola,y, x, direccion ); // Crea el nuevo Gnomo en la posición fija
+					break;// Salimos del bucle después de agregar la tortuga
+				}
 			}
 		}
 		

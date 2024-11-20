@@ -5,8 +5,6 @@ import entorno.Entorno;
 
 public class Pep {
 	
-	
-
     private Image imagen;
     private int x, y;
     private int direccion; // 1 = derecha, -1 = izquierda
@@ -61,7 +59,7 @@ public class Pep {
 
     public void saltar() {
         if (!saltando) {
-            this.velocidadY = -2; // Velocidad inicial de salto (hacia arriba)
+            this.velocidadY = -5; // Velocidad inicial de salto (hacia arriba)
             this.saltando = true;
             this.yInicial = this.y; // Guarda la posición Y inicial del salto
         }
@@ -73,7 +71,7 @@ public class Pep {
 
             // Cambia la dirección de la velocidadY si ha alcanzado la altura máxima de 10 unidades
             if (this.yInicial - this.y >= alturaSaltoMaxima) {
-                this.velocidadY = 8; // Comienza a caer
+                this.velocidadY = 10; // Comienza a caer
             }
 
             // Verifica si Pep está sobre una isla para detener el salto

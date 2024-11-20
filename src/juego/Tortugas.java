@@ -41,9 +41,6 @@ public class Tortugas{
 		return image;
 		}
 	
-	public void iniciar(int velocidad) {
-		this.direccion = velocidad;
-		}
 	
 	public void mover() {
 		this.x = this.x + this.direccion;
@@ -76,5 +73,4 @@ public class Tortugas{
 	public int getAncho() {
 		return ancho;
 		}
-	
 }

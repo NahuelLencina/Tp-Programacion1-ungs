@@ -10,6 +10,7 @@ public class Pep {
     private int direccion; // 1 = derecha, -1 = izquierda
     private boolean saltando;
     private int velocidadY;
+    private int velocidadX;
     private int alturaSaltoMaxima = 100; // Altura máxima de salto en unidades
     private int yInicial;
     private int direccionUltima;
@@ -21,11 +22,16 @@ public class Pep {
         this.direccion = 1;
         this.saltando = false;
         this.velocidadY = 0;
+        this.velocidadX = 0;
     }
 
     public void dibujar(Entorno entorno) {
         entorno.dibujarImagen(imagen, x, y, 0, 0.05);
     }
+
+   public void rebotar() {
+	   this.direccion = this.direccion * (-1);
+   }
 
     public void moverIzquierda() {
         this.x -= 2;
@@ -64,6 +70,7 @@ public class Pep {
             this.yInicial = this.y; // Guarda la posición Y inicial del salto
         }
     }
+ 
 
     public void actualizar(Isla[] islas) {
         if (saltando) {
@@ -109,6 +116,9 @@ public class Pep {
 
     public void setY(int y) {
         this.y = y;
+    }
+    public void setX(int x) {
+    	this.x = x;
     }
 
     public boolean estaSaltando() {

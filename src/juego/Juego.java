@@ -45,7 +45,10 @@ public class Juego extends InterfaceJuego
 // 		Constantes
 	    private int TICK_POR_SEGUNDO = 60; // Suponiendo que 60 ticks equivalen a 1 segundo
 	    private int VELOCIDAD_AL_CAER = 3; 
-	    
+	    private int LIMITE_PARA_SALVAR_GNOMOS = 280;
+	    private int TIEMPO_MAXIMO_ALEATORIO = 400; 
+	    private int MITAD_EJEX;
+	    private int LIMITE_INFERIOR_PANTALLA;
 
 //=========================================================================================
 //      Métodos
@@ -53,7 +56,8 @@ public class Juego extends InterfaceJuego
 	    Juego() {
 	        // Inicializa el objeto entorno
 	        this.entorno = new Entorno(this, "Al Rescate de los Gnomos", 800, 600);
-
+	        MITAD_EJEX = entorno.ancho() / 2;
+	        LIMITE_INFERIOR_PANTALLA = entorno.alto();
 	        inicializaCargarObjetos();
 	        
 
@@ -113,7 +117,7 @@ public class Juego extends InterfaceJuego
 	        this.islas = new Isla[15]; // Declaramos el array de islas
 	        this.gnomos = new Gnomo[5]; // Declaramos el array de gnomos
 	        this.tortugas = new Tortugas[4];
-	        this.pep = new Pep(Herramientas.cargarImagen("Imagenes/Pep.png"), entorno.ancho() / 2, 400); // Posición inicial de Pep
+	        this.pep = new Pep(Herramientas.cargarImagen("Imagenes/Pep.png"), MITAD_EJEX, 400); // Posición inicial de Pep
 	        this.bolas = new BolaDeFuego[6];
 
 	        // Se llama al método cargar el fondo
@@ -191,6 +195,7 @@ public class Juego extends InterfaceJuego
 	    		}
 
 	    		if (entorno.sePresiono('c') && enMovimiento) {
+//					Ejecuta sonido al saltar
 	    			Herramientas.play("Sonidos/pew-pew.wav");
 	    			agregarBola(pep.getX(),pep.getY(),velocidadBola);  	
 	    		}
@@ -222,12 +227,12 @@ public class Juego extends InterfaceJuego
 				// Aplica gravedad si Pep no estÃ¡ sobre una isla y no estÃ¡ saltando
 				if (!pepSobreIsla(pep) && !pep.estaSaltando()) {
 					gravedadPep(); 
-					if(pep.getY()>entorno.alto()) {
+					if(pep.getY()>LIMITE_INFERIOR_PANTALLA) {
 						vidaPep=false;
 					}
 				}
 				else
-					if(pep.getY()>entorno.alto())
+					if(pep.getY()>LIMITE_INFERIOR_PANTALLA)
 					{
 						vidaPep=false;
 					}
@@ -280,12 +285,9 @@ public class Juego extends InterfaceJuego
 	    				if (colisionConTortuga(gnomo)) {
 	    					this.gnomos[i] = null;
 	    				}
-	    				 
-	    				
 						if(colisionPepGnomo(pep) && this.gnomos[i]!=null) {
-							if(pep.getY()>280){
+							if(pep.getY()>LIMITE_PARA_SALVAR_GNOMOS){
 	    						gnomos[i] = null;  // Eliminar gnomo
-	    						System.out.println("Gnomo salvado  :" + i);
 	    						contadorGnomo++;        // Incrementar contador solo una vez
 	    					}
 	    				}
@@ -406,7 +408,7 @@ public class Juego extends InterfaceJuego
 // 		Método para detectar colisiones entre Pep-Tortugas		
 		
 		private boolean colisionPepTortuga(Pep pep) {
-	        int margen = 20; // Margen de colisión
+	        int margen = 10; // Margen de colisión
 	        for (int i=0; i<tortugas.length;i++) {
 	        	Tortugas tortuga = tortugas[i];
 	        	
@@ -437,8 +439,7 @@ public class Juego extends InterfaceJuego
 	                // Verificar si las posiciones están dentro del margen
 	                boolean colisionX = Math.abs(gnomo.getX() - pep.getX()) < margen;
 	                boolean colisionY = Math.abs(gnomo.getY() - pep.getY()) < margen;              
-	                if (colisionX && colisionY) {	
-	                	//System.out.println("Gnomo salvado  :" + i);   
+	                if (colisionX && colisionY) {	  
 	                    return true;
 	                }
 	            }
@@ -529,7 +530,7 @@ public class Juego extends InterfaceJuego
 		
 		
 		private int generarTiempoAleatorio() {
-			return random.nextInt(400);// Genera tiempo aleatorio hasta 400 tick
+			return random.nextInt(TIEMPO_MAXIMO_ALEATORIO);// Genera tiempo aleatorio hasta 400 tick
 		}
 
 //======================================================================================================
@@ -604,11 +605,11 @@ public class Juego extends InterfaceJuego
 		
 	    private void imprimirFondo() {
 	        // Imprimimos el fondo en la ventana
-	        this.entorno.dibujarImagen(fondo, entorno.ancho() / 2, entorno.alto() / 2, 0, 1.1);
+	        this.entorno.dibujarImagen(fondo, MITAD_EJEX, LIMITE_INFERIOR_PANTALLA / 2, 0, 1.1);
 	    }
 
 	    private void imprimirCasita() {
-	        this.entorno.dibujarImagen(casita, entorno.ancho() / 2, 80, 0, 0.2);
+	        this.entorno.dibujarImagen(casita, MITAD_EJEX, 80, 0, 0.2);
 	    }
 
 	    private void dibujarIslas() {

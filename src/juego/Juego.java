@@ -7,15 +7,14 @@ import java.awt.Image;
 import entorno.Entorno;
 import entorno.Herramientas;
 import entorno.InterfaceJuego;
-import jdk.internal.org.jline.terminal.TerminalBuilder.SystemOutput;
-
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.Random;
 
 
 public class Juego extends InterfaceJuego
 {
+//=========================================================================================
+// 		Objeto
+	
 	 	private Entorno entorno;
 	    private Image fondo;
 	    private Image casita;
@@ -24,8 +23,10 @@ public class Juego extends InterfaceJuego
 	    private Tortugas[] tortugas;
 	    private Isla[] islas;
 	    private Random random = new Random(); // Generador de números aleatorios
-	    private Pep pep; // Agregamos a Pep
+	    private Pep pep; 
 	    
+//=========================================================================================
+//		Variables de instancia
 	    
 	    private int vidaActual = 5;
 	    private boolean vidaPep = true;
@@ -35,13 +36,19 @@ public class Juego extends InterfaceJuego
 	    private boolean enMovimiento = false;
 	    private int velocidadBola = -3;
 	    private int tiempoEnSegundos = 0;
-	    private int ticksPorSegundo = 60; // Suponiendo que 60 ticks equivalen a 1 segundo
 	    private int contadorDeTicks = 0; // Contador auxiliar de ticks
 	    private int contadorGnomo=0;
 
 
+
+//=========================================================================================
+// 		Constantes
+	    private int TICK_POR_SEGUNDO = 60; // Suponiendo que 60 ticks equivalen a 1 segundo
+	    private int VELOCIDAD_AL_CAER = 3; 
 	    
-	    // Métodos
+
+//=========================================================================================
+//      Métodos
 	    
 	    Juego() {
 	        // Inicializa el objeto entorno
@@ -51,16 +58,14 @@ public class Juego extends InterfaceJuego
 	        
 
 	    }
-	    
-
-
-	    public void tick() {	
-	    
+//====================================================================================	    
+// 		En este metodo se procesa un instante de tiempo
+	    public void tick() {	 
+	    	
 	        if (entorno.sePresiono(entorno.TECLA_ENTER) || enMovimiento) {
 	            if (vidaActual > 0 && vidaPep==true) {
 	                actualizar();
-	                enMovimiento = true;
-	                
+	                enMovimiento = true;   
 	            }
 	            else 
 	            	vidaActual=0;
@@ -68,8 +73,9 @@ public class Juego extends InterfaceJuego
 	            	inicializaCargarObjetos();
 		        }
 	        }
+//====================================================================================        
+// 			los siguientes metodos se encargan de actualizar los objeetos en pantalla
 	        
-	        // Procesamiento de un instante de tiempo
 	        imprimirFondo();
 	        imprimirCasita();
 	        dibujarIslas();
@@ -78,6 +84,8 @@ public class Juego extends InterfaceJuego
 	        actualizarPep();
 	        actualizarBola();
 	        mostrarDatosPantalla();
+	        
+	        // Mostramos cartel para inicio de juego presione ENTER 
 	        if (enMovimiento!=true){
 	        	entorno.cambiarFont("Tahoma", 25,Color.BLACK, entorno.NEGRITA);
 	        	entorno.escribirTexto("Presione Enter para comenzar...", 210, 320); 
@@ -86,34 +94,36 @@ public class Juego extends InterfaceJuego
 	    
 	      
 	    public void inicializaCargarObjetos() {
-	    	// Inicializar lo que haga falta para el juego
-		    vidaActual = 5;
-		    vidaPep = true;
-		    tickContador = 0; // Contador de ticks
-//		    tiempoParaAparecer; // Ticks hasta la próxima aparición
-		    direccion = 1;
-		    enMovimiento = false;
-		    velocidadBola = -3;
-		    tiempoEnSegundos = 0;
-		    ticksPorSegundo = 60; // Suponiendo que 60 ticks equivalen a 1 segundo
-		    contadorDeTicks = 0; // Contador auxiliar de ticks
-		    contadorGnomo=0;
 	    	
-	    	
-	    	this.islas = new Isla[15]; // Declaramos el array de islas
-	    	this.gnomos = new Gnomo[5]; // Declaramos el array de gnomos
-	    	this.tortugas = new Tortugas[4];
-	    	this.pep = new Pep(Herramientas.cargarImagen("Imagenes/Pep.png"), entorno.ancho() / 2, 400); // Posición inicial de Pep
-	    	this.bolas = new BolaDeFuego [6];
+	    	   // Inicializar lo que haga falta para el juego
+	        vidaActual = 5;
+	        vidaPep = true;
+	        tickContador = 0;  // Reiniciar contador de ticks
+	        tiempoParaAparecer = generarTiempoAleatorio();  // Reiniciar el tiempo de aparición
+	        direccion = 1;
+	        enMovimiento = false;
+	        velocidadBola = -3;
+	        tiempoEnSegundos = 0;
+	        contadorDeTicks = 0; // Reiniciar el contador auxiliar de ticks
+	        contadorGnomo = 0;
+	       
+		   
+		    
 
-	    	// Se llama al método cargar el fondo
-	    	cargarFondo();
-	    	// Se llama al método para cargar las islas
-	    	cargarIslas();
-	    	// Se llama al método para cargar la casita
-	    	cargarCasita();
-	    	// Inicia el juego!
-	    	this.entorno.iniciar();
+	        this.islas = new Isla[15]; // Declaramos el array de islas
+	        this.gnomos = new Gnomo[5]; // Declaramos el array de gnomos
+	        this.tortugas = new Tortugas[4];
+	        this.pep = new Pep(Herramientas.cargarImagen("Imagenes/Pep.png"), entorno.ancho() / 2, 400); // Posición inicial de Pep
+	        this.bolas = new BolaDeFuego[6];
+
+	        // Se llama al método cargar el fondo
+	        cargarFondo();
+	        // Se llama al método para cargar las islas
+	        cargarIslas();
+	        // Se llama al método para cargar la casita
+	        cargarCasita();
+	        // Inicia el juego!
+	        this.entorno.iniciar();
 	    }
 	    
 //======================================================================================================== 
@@ -125,7 +135,7 @@ public class Juego extends InterfaceJuego
 	        	revisarMovimientosPep();
 	        	// Incrementar contador de ticks para el tiempo
 		    	contadorDeTicks++;
-		    	if (contadorDeTicks >= ticksPorSegundo) {
+		    	if (contadorDeTicks >= TICK_POR_SEGUNDO) {
 		    		tiempoEnSegundos++;
 		    		contadorDeTicks = 0;
 		    	}   	
@@ -180,10 +190,6 @@ public class Juego extends InterfaceJuego
 	    			// Herramientas.play("Sonidos/mario-bros-woo-hoo.wav");
 	    		}
 
-	    		if (entorno.sePresiono(entorno.TECLA_ABAJO) || entorno.sePresiono('s')) {
-	    			pep.moverAbajo(islas);
-	    		}
-
 	    		if (entorno.sePresiono('c') && enMovimiento) {
 	    			Herramientas.play("Sonidos/pew-pew.wav");
 	    			agregarBola(pep.getX(),pep.getY(),velocidadBola);  	
@@ -192,27 +198,6 @@ public class Juego extends InterfaceJuego
 	    	
 	    } 
 
-//======================================================================================================== 
-// 		Método encargado de monitorear las colisiones entre tortugas y Gnomos 	
-	    
-	    private boolean colisionConTortuga(Gnomo gnomo) {
-	        int margen = 20; // Margen de colisión
-
-	        for (Tortugas tortuga : tortugas) {
-	            if (gnomo != null && tortuga != null) {
-	                // Verificar si las posiciones están dentro del margen
-	                boolean colisionX = Math.abs(tortuga.getX() - gnomo.getX()) < margen;
-	                boolean colisionY = Math.abs(tortuga.getY() - gnomo.getY()) < margen;
-
-	                if (colisionX && colisionY) {
-	                    if(vidaActual>0)
-	                    	vidaActual--;
-	                    return true;
-	                }
-	            }
-	        }
-	        return false;
-	    }
 
 //======================================================================================================== 
 // 		Método encargado de mostrar el tiempo de juego en pantalla
@@ -228,15 +213,15 @@ public class Juego extends InterfaceJuego
 
 //======================================================================================================== 
 // 		Método encargado de monitorear el comportamiento de Pep
-
+		
 		public void actualizarPep() {
 			// Actualizamos a Pep
 			if(vidaPep==true && !colisionPepTortuga(pep) ) {
 				pep.dibujar(this.entorno);
 				pep.actualizar(islas);
-				// Aplica gravedad si Pep no está sobre una isla y no está saltando
+				// Aplica gravedad si Pep no estÃ¡ sobre una isla y no estÃ¡ saltando
 				if (!pepSobreIsla(pep) && !pep.estaSaltando()) {
-					pep.setY(pep.getY() + 2); // Controlar la velocidad de caída
+					gravedadPep(); 
 					if(pep.getY()>entorno.alto()) {
 						vidaPep=false;
 					}
@@ -252,7 +237,17 @@ public class Juego extends InterfaceJuego
 				vidaPep=false;
 			}
 		}
+//======================================================================================================== 
+// 		Método encargado de aplicar gravedad
 	
+		public void gravedadPep(){
+			if(!pepSobreIsla(pep)) {
+				pep.setY(pep.getY() + VELOCIDAD_AL_CAER); //Aplica gravedad
+			}
+		}
+		
+	
+		
 //======================================================================================================== 
 // 		Método encargado de demorar de forma aleatoria el nacimiento de un Gnomo y tortuga
 	    
@@ -285,16 +280,20 @@ public class Juego extends InterfaceJuego
 	    				if (colisionConTortuga(gnomo)) {
 	    					this.gnomos[i] = null;
 	    				}
-	    				else if(colisionPepGnomo(pep) && this.gnomos[i]!=null) {
-	    				if(pep.getY()>280){
-	    					 this.gnomos[i] = null;  // Eliminar gnomo
-	    					 contadorGnomo++;        // Incrementar contador solo una vez
+	    				 
+	    				
+						if(colisionPepGnomo(pep) && this.gnomos[i]!=null) {
+							if(pep.getY()>280){
+	    						gnomos[i] = null;  // Eliminar gnomo
+	    						System.out.println("Gnomo salvado  :" + i);
+	    						contadorGnomo++;        // Incrementar contador solo una vez
 	    					}
 	    				}
 	    			}
 	    		}
 	    	}
 	    }
+	    
 	    
 //======================================================================================================== 
 // 		Método encargado de monitorear el comportamiento de las tortugas
@@ -382,12 +381,36 @@ public class Juego extends InterfaceJuego
 		    }
 		
 //======================================================================================================== 
+// 		Método encargado de monitorear las colisiones entre tortugas y Gnomos 	
+	    
+	    private boolean colisionConTortuga(Gnomo gnomo) {
+	        int margen = 20; // Margen de colisión
+
+	        for (Tortugas tortuga : tortugas) {
+	            if (gnomo != null && tortuga != null) {
+	                // Verificar si las posiciones están dentro del margen
+	                boolean colisionX = Math.abs(tortuga.getX() - gnomo.getX()) < margen;
+	                boolean colisionY = Math.abs(tortuga.getY() - gnomo.getY()) < margen;
+
+	                if (colisionX && colisionY) {
+	                    if(vidaActual>0)
+	                    	vidaActual--;
+	                    return true;
+	                }
+	            }
+	        }
+	        return false;
+	    }
+
+//======================================================================================================== 
 // 		Método para detectar colisiones entre Pep-Tortugas		
 		
 		private boolean colisionPepTortuga(Pep pep) {
 	        int margen = 20; // Margen de colisión
 	        for (int i=0; i<tortugas.length;i++) {
 	        	Tortugas tortuga = tortugas[i];
+	        	
+	        	
 	        	if (pep!= null && tortuga != null) {
 	                // Verificar si las posiciones están dentro del margen
 	                boolean colisionX = Math.abs(tortuga.getX() - pep.getX()) < margen;
@@ -407,14 +430,15 @@ public class Juego extends InterfaceJuego
 // 		Método para detectar colisiones entre Pep-Gnomos
 		
 		private boolean colisionPepGnomo(Pep pep) {
-	        int margen = 5; // Margen de colisión
+	        int margen = 10; // Margen de colisión
 	        for (int i=0; i<gnomos.length;i++) {
-	        	Gnomo gnomo = gnomos[i];
+	            Gnomo gnomo = gnomos[i];
 	        	if (pep!= null && gnomo!= null) {
 	                // Verificar si las posiciones están dentro del margen
 	                boolean colisionX = Math.abs(gnomo.getX() - pep.getX()) < margen;
 	                boolean colisionY = Math.abs(gnomo.getY() - pep.getY()) < margen;              
-	                if (colisionX && colisionY) {
+	                if (colisionX && colisionY) {	
+	                	//System.out.println("Gnomo salvado  :" + i);   
 	                    return true;
 	                }
 	            }
@@ -446,7 +470,7 @@ public class Juego extends InterfaceJuego
 		    return false; // La tortuga no está sobre ninguna isla
 		}	
 		
-		
+
 //=================================================================================================== 
 // 		Método para verificar si un Gnomo está sobre alguna isla
 
@@ -467,8 +491,9 @@ public class Juego extends InterfaceJuego
 	        return false; // El gnomo no está sobre ninguna isla
 	    }
 
+    
 //=================================================================================================== 
-// 		Método para verificar si Pep está sobre alguna isla
+// 		Metodo para verificar si Pep estÃ¡ sobre alguna isla
 	    
 	    private boolean pepSobreIsla(Pep pep) {
 	        for (Isla isla : islas) {
@@ -485,7 +510,6 @@ public class Juego extends InterfaceJuego
 	        }
 	        return false;
 	    }
-
 //=================================================================================================== 
 // 		Método para verificar si un tortuga está sobre alguna isla
 	    

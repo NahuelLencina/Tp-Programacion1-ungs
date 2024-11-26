@@ -11,6 +11,7 @@ public class Gnomo{
 	private int x, direccion, ancho, alto;
 	private double y;
 	private Image image;
+	private boolean salvado; // Indica si el gnomo ha sido rescatado
 	
 //Constructor que recibe la imagen y las coordenadas
 	public Gnomo(Image image, int x, int y, int direccion, int ancho, int alto)
@@ -21,9 +22,9 @@ public class Gnomo{
 		this.direccion = direccion;	
 		this.ancho = ancho;
 		this.alto = alto;
+
 	}
-	
-	// metodos 
+		
 	public double getX() {
 		return x;
 		}
@@ -67,5 +68,5 @@ public class Gnomo{
 	public int getAncho() {
 		return ancho;
 		}
-	
+
 }

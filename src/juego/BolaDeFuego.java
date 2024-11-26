@@ -9,8 +9,7 @@ public class BolaDeFuego {
 	private int y, x;
 	private int velocidadX;
 	private int direccion;
-	private int direccionUltima;
-	//private boolean disparo;
+
 	
 	
 	
@@ -21,7 +20,6 @@ public class BolaDeFuego {
 		this.x = x;
 		this.velocidadX =  0;
 		this.direccion = direccion;
-		//this.disparo = false;
 	}
 	
 	public void dibujar(Entorno entorno) {
